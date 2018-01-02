@@ -97,6 +97,32 @@ ProductRouter.get('/getProductDetails/:id', function(req, res){
 });
 
 
+ProductRouter.get('/getPopularProducts', function(req, res){
+    ProductModel.find({}).populate('category').populate('images').sort('-orderRate').limit(10).exec(function(err, product){
+        if(err){
+            console.log(err);
+            return res.json({data:{status : 500}});
+        }else {
+
+            // Populate Images
+            
+
+            return res.json({data: {status: 200, product}});
+        }
+    })
+});
+
+ProductRouter.get('/getNewProducts', function(req, res){
+    ProductModel.find({}).populate('category').populate('images').sort({additionDate: 'desc'}).limit(10).exec(function(err, product){
+        if(err){
+            console.log(err);
+            return res.json({data:{status : 500}});
+        }else{
+            return res.json({data: {status: 200, product}});
+        }
+    });
+});
+
 /*
 *   This method adds new product
 */
