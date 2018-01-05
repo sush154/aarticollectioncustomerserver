@@ -8,7 +8,7 @@ ProductSchema = mongoose.Schema({
     price           :   Number,
     quantity        :   Number,
     description     :   String,
-    images          :   [{type : mongoose.Schema.Types.ObjectId, ref : 'image'}],
+    images          :   [{type : String, ref : 'image'}],
     highlights      :   [{type : String, ref : 'highlights'}],
     discount        :   Number,
     colorVariants   :   [{type: String, ref : 'colorVariants'}],             // Variants include colors

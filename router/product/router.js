@@ -98,14 +98,11 @@ ProductRouter.get('/getProductDetails/:id', function(req, res){
 
 
 ProductRouter.get('/getPopularProducts', function(req, res){
-    ProductModel.find({}).populate('category').populate('images').sort('-orderRate').limit(10).exec(function(err, product){
+    ProductModel.find({}).populate('category').sort('-orderRate').limit(10).exec(function(err, product){
         if(err){
             console.log(err);
             return res.json({data:{status : 500}});
         }else {
-
-            // Populate Images
-            
 
             return res.json({data: {status: 200, product}});
         }
@@ -113,7 +110,7 @@ ProductRouter.get('/getPopularProducts', function(req, res){
 });
 
 ProductRouter.get('/getNewProducts', function(req, res){
-    ProductModel.find({}).populate('category').populate('images').sort({additionDate: 'desc'}).limit(10).exec(function(err, product){
+    ProductModel.find({}).populate('category').sort({additionDate: 'desc'}).limit(10).exec(function(err, product){
         if(err){
             console.log(err);
             return res.json({data:{status : 500}});
@@ -121,6 +118,24 @@ ProductRouter.get('/getNewProducts', function(req, res){
             return res.json({data: {status: 200, product}});
         }
     });
+});
+
+/*
+*   This method retrieves product list based on criteria
+*/
+ProductRouter.post('/getProductsListOnCriteria', function(req, res){
+
+    if(req.body.categoryType === 'parentCategory'){
+        ProductModel.find({'category.parentCategory' : req.body.criteriaId}).populate('category').limit(10).exec(function(err, product){
+            if(err){
+                console.log(err);
+                return res.json({data:{status : 500}});
+            }else {
+                return res.json({data: {status: 200, product}});
+            }
+        });
+    }
+
 });
 
 /*
@@ -321,54 +336,6 @@ ProductRouter.post('/addDiscountSelectedProduct', function(req, res){
 });
 
 
-/*
-*   This method add image urls for the product
-*/
-ProductRouter.post('/addImage/:productId', function(req, res){
-    /*ProductModel.update({_idg : req.body._id}, {'$push' : {'images' : req.body.imaeUrl}}, function(err, product){
-        if(err){
-            console.log(err);
-            return res.json({data:{status : 500}});
-        }else {
-            return res.json({data:{status : 200}});
-        }
-    });*/
-    //console.log(req.params.productId);
-    upload(req,res,function(err){
-        //console.log(req.file);
-        if(err){
-             return res.json({error_code:1,err_desc:err});
-
-        }else {
-            var newImage = new ImageModel;
-
-            newImage.img.data = fs.readFileSync(req.file.path);
-            newImage.img.contentType = 'base64';
-            newImage.projectId = req.params.productId;
-
-            newImage.save(function(e, image){
-                if(e){
-                    console.log(e);
-                    return res.json({data:{status : 500}});
-                }else {
-                    fs.unlinkSync(req.file.path);
-                    return res.json({data:{status : 200}});
-
-                    /*ProductModel.update({_id : req.params.productId}, {'$push' : {'images' : image._id}}, function(err, product){
-                        if(err){
-                            console.log(err);
-                            return res.json({data:{status : 500}});
-                        }else {
-                            return res.json({data: {status: 200, product : req.params.productId}});
-                            //return res.json({error_code:0,err_desc:null});
-                        }
-                    });*/
-                }
-            });
-        }
-
-    });
-});
 
 /*
 *   This method retrieves images list for selected product id
@@ -421,6 +388,23 @@ ProductRouter.get('/productNameFilter/:productName', function(req, res){
         }else {
             return res.json({data: {status: 200, product}});
 
+        }
+    });
+});
+
+ProductRouter.post('/getImg', function(req, res){
+    res.set('Content-Type', 'image/jpg');
+
+    let imageDir = imagePath;
+    fs.readFile(imageDir, function(err, content){
+        if (err) {
+            res.writeHead(400, {'Content-type':'text/html'})
+            console.log(err);
+            res.end("No such image");
+        } else {
+            //specify the content type in the response will be an image
+            res.writeHead(200,{'Content-type':'image/*'});
+            res.end(content);
         }
     });
 });
